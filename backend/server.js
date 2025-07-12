@@ -10,6 +10,7 @@ config();
 const app = express();
 
 // authentication
+app.use(express.json()); //req.body parser
 
 app.use("/api/auth", authRoutes);
 
