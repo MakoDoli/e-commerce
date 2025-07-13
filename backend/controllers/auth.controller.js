@@ -51,7 +51,7 @@ export const signup = async (req, res) => {
   try {
     const user = await User.create({ name, email, password });
     // authenticate
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = await generateTokens(user._id);
 
     await storeRefreshToken(user._id, refreshToken);
     setCookies(res, accessToken, refreshToken);
