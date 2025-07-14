@@ -156,3 +156,7 @@ export const refreshToken = async (req, res) => {
     res.status(500).json({ message: "RefreshToken error", error: err.message });
   }
 };
+
+export const getProfile = async (req, res) => {
+  res.send("Profile");
+};

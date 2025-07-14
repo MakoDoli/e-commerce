@@ -1,6 +1,7 @@
 import express from "express";
 
 import authRoutes from "./routes/auth.route.js";
+import productRoutes from "./routes/product.route.js";
 
 import { config } from "dotenv";
 import { connectDB } from "./lib/db.js";
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 
 const PORT = process.env.PORT || 5000;
 
