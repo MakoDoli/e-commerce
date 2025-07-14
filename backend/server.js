@@ -4,6 +4,8 @@ import authRoutes from "./routes/auth.route.js";
 
 import { config } from "dotenv";
 import { connectDB } from "./lib/db.js";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
 
 config();
 
@@ -11,6 +13,8 @@ const app = express();
 
 // authentication
 app.use(express.json()); //req.body parser
+app.use(cookieParser());
+app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
 

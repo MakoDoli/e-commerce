@@ -40,6 +40,7 @@ const setCookies = (res, accessToken, refreshToken) => {
   });
 };
 //////////////////////////////////////
+// ***************  SIGNUP ************
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
   console.log(email);
@@ -71,6 +72,25 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   res.send("Ready to login");
 };
+
+//////////////////////////////////////////
+// ***********  LOGOUT *************
+
 export const logout = async (req, res) => {
-  res.send("Ready to logout");
+  try {
+    console.log("COOKIEEE", req.cookies);
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      );
+      await redis.del(`refresh_token${decoded.userId}`);
+    }
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
