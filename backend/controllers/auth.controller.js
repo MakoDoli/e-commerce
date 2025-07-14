@@ -69,8 +69,32 @@ export const signup = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+/////////////////////////////////
+// ************  LOGIN  *********
 export const login = async (req, res) => {
-  res.send("Ready to login");
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    console.log("USER LOGGING PASswors", password);
+    if (user && (await user.comparePassword(password))) {
+      const { accessToken, refreshToken } = generateTokens(user._id);
+
+      await storeRefreshToken(user._id, refreshToken);
+      setCookies(res, accessToken, refreshToken);
+      return res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      });
+    }
+  } catch (err) {
+    console.log("Error in login controller", err.message);
+    res
+      .status(500)
+      .json({ message: `Error in login controller ${err.message}` });
+  }
 };
 
 //////////////////////////////////////////
