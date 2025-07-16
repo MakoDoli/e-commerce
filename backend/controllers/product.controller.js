@@ -40,3 +40,11 @@ export const getFeaturedProducts = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const createProduct = async (req, res) => {
+  try {
+    const { name, image, price, description, category } = req.body;
+  } catch (error) {
+    console.error(error);
+  }
+};
