@@ -1,5 +1,6 @@
 import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
+import cloudinary from "../lib/cloudinary.js";
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -44,7 +45,52 @@ export const getFeaturedProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
   try {
     const { name, image, price, description, category } = req.body;
+    let cloudinaryResponse = null;
+    if (image) {
+      cloudinaryResponse = await cloudinary.uploader.upload(image, {
+        folder: "products",
+      });
+    }
+
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      category,
+      image: cloudinaryResponse?.secure_url || "",
+    });
+
+    res.status(201).json({ product });
   } catch (error) {
-    console.error(error);
+    console.log("Error creating product", error.message);
+    res
+      .status(500)
+      .json({ message: "Error creating product", error: error.message });
+  }
+};
+
+export const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.image) {
+      const publicId = product.image.split("/").pop().split(".")[0];
+      try {
+        await cloudinary.uploader.destroy(`products/${publicId}`);
+      } catch (error) {
+        console.log("Error deleting image from cloudinary", error);
+      }
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
+    res.json("Product deleted successfully");
+  } catch (error) {
+    console.log("Error deleting product", error);
+    res
+      .status(500)
+      .json({ message: "Error deleting product", error: error.message });
   }
 };
