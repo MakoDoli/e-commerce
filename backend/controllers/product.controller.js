@@ -94,3 +94,66 @@ export const deleteProduct = async (req, res) => {
       .json({ message: "Error deleting product", error: error.message });
   }
 };
+
+export const getRecommendedProducts = async (req, res) => {
+  try {
+    const products = await Product.aggregate([
+      {
+        $sample: { size: 3 },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          price: 1,
+        },
+      },
+    ]);
+    res.json({ products });
+  } catch (error) {
+    console.log("Error getting recommended products", error);
+    res.status(500).json({
+      message: "Error getting recommended products",
+      error: error.message,
+    });
+  }
+};
+
+export const getProductsByCategory = async (req, res) => {
+  const { category } = req.params;
+  const products = await Product.find({ category: category });
+  try {
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const toggleFeaturedProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(res.params.id);
+    if (product) {
+      product.isFeatured = !product.isFeatured;
+      const updatedProduct = await product.save();
+      await updateFeaturedProductCache();
+    } else {
+      res.status(404).json({ message: "No Product Found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error updating featured product",
+      error: error.message,
+    });
+  }
+};
+
+async function updateFeaturedProductCache() {
+  try {
+    // lean() returns javascript object instead mongoose document
+    const featuredProducts = await Product.find({ isFeatured: true }).lean();
+    await redis.set("featured_products", JSON.stringify(featuredProducts));
+  } catch (error) {
+    console.log("error in update cache function", error);
+  }
+}
